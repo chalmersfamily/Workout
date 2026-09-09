@@ -1,0 +1,396 @@
+<div id="app"></div>
+<style>
+  :root{
+    --lake: #1F4A4D;
+    --lake-dark: #163638;
+    --sand: #EFE7D6;
+    --sand-dark: #E2D6BC;
+    --rust: #B5552B;
+    --ink: #23282A;
+    --sage: #7C9A72;
+    --line: #D8CCAE;
+  }
+  *{box-sizing:border-box;}
+  #app{
+    font-family: 'Iowan Old Style','Georgia',serif;
+    color: var(--ink);
+    background: var(--sand);
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 18px 60px;
+  }
+  .header{
+    margin-bottom: 22px;
+  }
+  .header h1{
+    font-size: 1.65rem;
+    margin: 0 0 4px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--lake-dark);
+  }
+  .header p{
+    margin: 0;
+    color: #5C6560;
+    font-size: 0.92rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .overall{
+    display:flex;
+    align-items:center;
+    gap: 14px;
+    margin: 18px 0 26px;
+    padding: 14px 16px;
+    background: var(--lake);
+    border-radius: 10px;
+    color: var(--sand);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .overall-track{
+    flex:1;
+    height: 8px;
+    background: rgba(255,255,255,0.22);
+    border-radius: 5px;
+    overflow:hidden;
+  }
+  .overall-fill{
+    height:100%;
+    background: var(--sand);
+    border-radius: 5px;
+    transition: width 0.35s ease;
+  }
+  .overall-num{
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0.92;
+  }
+  .week{
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    background: #FBF8EF;
+    overflow: hidden;
+  }
+  .week-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 13px 16px;
+    cursor: pointer;
+    user-select:none;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .week-head:hover{ background: rgba(0,0,0,0.02); }
+  .week-title{
+    display:flex;
+    align-items:baseline;
+    gap: 10px;
+  }
+  .week-title .num{
+    font-family: 'Iowan Old Style','Georgia',serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--lake-dark);
+  }
+  .week-title .tag{
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--sand-dark);
+    color: var(--lake-dark);
+  }
+  .week-title .tag.deload{
+    background: var(--rust);
+    color: #fff;
+  }
+  .week-progress{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .week-progress .count{
+    font-size: 0.82rem;
+    color: #6B7570;
+  }
+  .chevron{
+    transition: transform 0.2s ease;
+    color: #8A8F86;
+  }
+  .week.open .chevron{ transform: rotate(180deg); }
+  .week-body{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+  .week.open .week-body{
+    max-height: 900px;
+  }
+  .day{
+    display:flex;
+    align-items:flex-start;
+    gap: 12px;
+    padding: 11px 16px;
+    border-top: 1px solid var(--line);
+  }
+  .day.optional{
+    background: rgba(124,154,114,0.08);
+  }
+  .checkbox{
+    flex-shrink:0;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--sage);
+    margin-top: 2px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: #fff;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .checkbox.checked{
+    background: var(--sage);
+    border-color: var(--sage);
+  }
+  .checkbox svg{
+    width: 13px; height: 13px;
+    opacity: 0;
+    transition: opacity 0.1s ease;
+  }
+  .checkbox.checked svg{ opacity: 1; }
+  .day-text{ flex:1; }
+  .day-label{
+    display:flex;
+    gap: 8px;
+    align-items:baseline;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--rust);
+    margin-bottom: 2px;
+  }
+  .day-title{
+    font-size: 0.98rem;
+    color: var(--ink);
+    line-height: 1.35;
+  }
+  .day-title.done{
+    color: #9AA098;
+    text-decoration: line-through;
+  }
+  .day-note{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.82rem;
+    color: #7A8178;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .footer-actions{
+    text-align:center;
+    margin-top: 24px;
+  }
+  .reset-btn{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.82rem;
+    color: #8A8F86;
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .loading{
+    text-align:center;
+    padding: 40px;
+    color: #8A8F86;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+</style>
+<script>
+(function(){
+  const WEEKS = [
+    { n:1, phase:'Base', days:[
+      {id:'w1-mon', d:'Mon', t:'Rowing — Steady State Endurance', note:'30–40 min continuous, 105–116 bpm'},
+      {id:'w1-tue', d:'Tue', t:'Strength A + Vigorous Finisher', note:'Pull/Posterior Chain, then 5–6 rounds hard/easy'},
+      {id:'w1-wed', d:'Wed', t:'Rowing — Tempo Intervals', note:'5 x 6 min @ 118–128 bpm'},
+      {id:'w1-thu', d:'Thu', t:'Pilates/Mobility + Balance', note:'5 min single-leg balance, then routine'},
+      {id:'w1-fri', d:'Fri', t:'Strength B + Vigorous Finisher', note:'Push/Core, then 5–6 rounds hard/easy'},
+    ]},
+    { n:2, phase:'Base', days:[
+      {id:'w2-mon', d:'Mon', t:'Rowing — Steady State Endurance', note:'+5 min vs Week 1'},
+      {id:'w2-tue', d:'Tue', t:'Strength A + Vigorous Finisher', note:'6–7 rounds hard/easy'},
+      {id:'w2-wed', d:'Wed', t:'Rowing — Tempo Intervals', note:'5 x 6 min @ 118–128 bpm'},
+      {id:'w2-thu', d:'Thu', t:'Pilates/Mobility + Balance', note:'5 min single-leg balance, then routine'},
+      {id:'w2-fri', d:'Fri', t:'Strength B + Vigorous Finisher', note:'6–7 rounds hard/easy'},
+    ]},
+    { n:3, phase:'Build', days:[
+      {id:'w3-mon', d:'Mon', t:'Rowing — Steady State Endurance', note:'30–40 min'},
+      {id:'w3-tue', d:'Tue', t:'Strength A + Vigorous Finisher', note:'Full 8 rounds hard/easy'},
+      {id:'w3-wed', d:'Wed', t:'Rowing — Tempo Intervals (extended)', note:'6 x 6 min @ 118–128 bpm'},
+      {id:'w3-thu', d:'Thu', t:'Pilates/Mobility + Balance', note:'5 min single-leg balance, then routine'},
+      {id:'w3-fri', d:'Fri', t:'Strength B + Vigorous Finisher', note:'Full 8 rounds hard/easy'},
+    ]},
+    { n:4, phase:'Deload', days:[
+      {id:'w4-mon', d:'Mon', t:'Rowing — Easy', note:'20 min, Endurance HR only'},
+      {id:'w4-tue', d:'Tue', t:'Strength A — Light', note:'Lighter weight/higher reps. No finisher.'},
+      {id:'w4-wed', d:'Wed', t:'Rowing — Easy', note:'20 min, Endurance HR only'},
+      {id:'w4-thu', d:'Thu', t:'Pilates — Gentle + Balance', note:'Skip intensity, keep balance block'},
+      {id:'w4-fri', d:'Fri', t:'Strength B — Light', note:'Lighter weight/higher reps. No finisher.'},
+    ]},
+    { n:5, phase:'Build', days:[
+      {id:'w5-mon', d:'Mon', t:'Rowing — Steady State Endurance', note:'30–40 min'},
+      {id:'w5-tue', d:'Tue', t:'Strength A + Vigorous Finisher', note:'Full 8 rounds hard/easy'},
+      {id:'w5-wed', d:'Wed', t:'Rowing — Tempo Intervals', note:'6 x 6 min @ 118–128 bpm'},
+      {id:'w5-thu', d:'Thu', t:'Pilates/Mobility + Balance', note:'5 min single-leg balance, then routine'},
+      {id:'w5-fri', d:'Fri', t:'Strength B + Vigorous Finisher', note:'Full 8 rounds hard/easy'},
+      {id:'w5-sat', d:'Sat', t:'Long Steady State Row (optional)', note:'45–60 min, HR drifting 98–116', optional:true},
+    ]},
+    { n:6, phase:'Build', days:[
+      {id:'w6-mon', d:'Mon', t:'Rowing — Steady State Endurance', note:'30–40 min'},
+      {id:'w6-tue', d:'Tue', t:'Strength A + Vigorous Finisher', note:'Full 8 rounds hard/easy'},
+      {id:'w6-wed', d:'Wed', t:'Rowing — Threshold Intervals', note:'6 x 3 min @ 130–140 bpm, 3 min easy'},
+      {id:'w6-thu', d:'Thu', t:'Pilates/Mobility + Balance', note:'5 min single-leg balance, then routine'},
+      {id:'w6-fri', d:'Fri', t:'Strength B + Vigorous Finisher', note:'Full 8 rounds hard/easy'},
+      {id:'w6-sat', d:'Sat', t:'Long Steady State Row (optional)', note:'45–60 min, HR drifting 98–116', optional:true},
+    ]},
+    { n:7, phase:'Build', days:[
+      {id:'w7-mon', d:'Mon', t:'Rowing — Steady State Endurance', note:'+5 min'},
+      {id:'w7-tue', d:'Tue', t:'Strength A + Vigorous Finisher', note:'Full 8 rounds hard/easy'},
+      {id:'w7-wed', d:'Wed', t:'Rowing — Threshold Intervals', note:'6 x 3 min @ 130–140 bpm'},
+      {id:'w7-thu', d:'Thu', t:'Pilates/Mobility + Balance', note:'5 min single-leg balance, then routine'},
+      {id:'w7-fri', d:'Fri', t:'Strength B + Vigorous Finisher', note:'Full 8 rounds hard/easy'},
+      {id:'w7-sat', d:'Sat', t:'Long Steady State Row (optional)', note:'45–60 min, HR drifting 98–116', optional:true},
+    ]},
+    { n:8, phase:'Deload', days:[
+      {id:'w8-mon', d:'Mon', t:'Rowing — Easy', note:'~40% cut, easy effort only'},
+      {id:'w8-tue', d:'Tue', t:'Strength A — Light', note:'Easy effort. No finisher.'},
+      {id:'w8-wed', d:'Wed', t:'Rowing — Easy', note:'~40% cut, easy effort only'},
+      {id:'w8-thu', d:'Thu', t:'Pilates — Gentle + Balance', note:'Keep balance block'},
+      {id:'w8-fri', d:'Fri', t:'Strength B — Light', note:'Easy effort. No finisher.'},
+    ]},
+  ];
+
+  const STORAGE_KEY = 'fall-tracker-state';
+  let state = {};
+  let openWeek = null;
+
+  const app = document.getElementById('app');
+  app.innerHTML = '<div class="loading">Loading your tracker…</div>';
+
+  function checkSvg(){
+    return '<svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 11.5L13 4.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function totalCount(){
+    let total=0, done=0;
+    WEEKS.forEach(w=>w.days.forEach(d=>{
+      total++;
+      if(state[d.id]) done++;
+    }));
+    return {total, done};
+  }
+
+  function weekCount(w){
+    let total=w.days.length, done=0;
+    w.days.forEach(d=>{ if(state[d.id]) done++; });
+    return {total, done};
+  }
+
+  function firstIncompleteWeek(){
+    for(const w of WEEKS){
+      const c = weekCount(w);
+      if(c.done < c.total) return w.n;
+    }
+    return WEEKS[0].n;
+  }
+
+  function render(){
+    const {total, done} = totalCount();
+    const pct = total ? Math.round((done/total)*100) : 0;
+
+    let html = '';
+    html += '<div class="header"><h1>Fall Training Tracker</h1><p>8-week plan · check off each session as you go</p></div>';
+    html += '<div class="overall"><div class="overall-num">'+done+' / '+total+'</div><div class="overall-track"><div class="overall-fill" style="width:'+pct+'%"></div></div><div class="overall-num">'+pct+'%</div></div>';
+
+    WEEKS.forEach(w=>{
+      const c = weekCount(w);
+      const isOpen = openWeek === w.n;
+      html += '<div class="week '+(isOpen?'open':'')+'" data-week="'+w.n+'">';
+      html += '<div class="week-head" data-toggle="'+w.n+'">';
+      html += '<div class="week-title"><span class="num">Week '+w.n+'</span><span class="tag '+(w.phase==='Deload'?'deload':'')+'">'+w.phase+'</span></div>';
+      html += '<div class="week-progress"><span class="count">'+c.done+'/'+c.total+'</span><span class="chevron">▾</span></div>';
+      html += '</div>';
+      html += '<div class="week-body">';
+      w.days.forEach(d=>{
+        const checked = !!state[d.id];
+        html += '<div class="day '+(d.optional?'optional':'')+'">';
+        html += '<div class="checkbox '+(checked?'checked':'')+'" data-id="'+d.id+'">'+checkSvg()+'</div>';
+        html += '<div class="day-text">';
+        html += '<div class="day-label">'+d.d+(d.optional?' · optional':'')+'</div>';
+        html += '<div class="day-title '+(checked?'done':'')+'">'+d.t+'</div>';
+        html += '<div class="day-note">'+d.note+'</div>';
+        html += '</div></div>';
+      });
+      html += '</div></div>';
+    });
+
+    html += '<div class="footer-actions"><button class="reset-btn" id="reset-btn">Reset all progress</button></div>';
+
+    app.innerHTML = html;
+
+    app.querySelectorAll('[data-toggle]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const n = parseInt(el.getAttribute('data-toggle'));
+        openWeek = (openWeek === n) ? null : n;
+        render();
+      });
+    });
+    app.querySelectorAll('.checkbox').forEach(el=>{
+      el.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const id = el.getAttribute('data-id');
+        state[id] = !state[id];
+        save();
+        render();
+      });
+    });
+    const resetBtn = document.getElementById('reset-btn');
+    if(resetBtn){
+      resetBtn.addEventListener('click', ()=>{
+        if(confirm('Reset all checked sessions? This cannot be undone.')){
+          state = {};
+          save();
+          render();
+        }
+      });
+    }
+  }
+
+  async function save(){
+    try{
+      await fetch('/api/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+      });
+    }catch(e){
+      console.error('Save failed', e);
+    }
+  }
+
+  async function load(){
+    try{
+      const res = await fetch('/api/state');
+      const data = await res.json();
+      state = data || {};
+    }catch(e){
+      state = {};
+    }
+    openWeek = firstIncompleteWeek();
+    render();
+  }
+
+  load();
+})();
+</script>
