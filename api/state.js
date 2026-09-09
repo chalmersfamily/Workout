@@ -1,12 +1,14 @@
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 
-// Single shared record for this tracker. Fine for one person using
-// their own private deployment across a few devices.
+const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+const redis = new Redis({ url, token });
 const KEY = 'fall-tracker-state';
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
-    const data = await kv.get(KEY);
+    const data = await redis.get(KEY);
     res.status(200).json(data || {});
     return;
   }
@@ -16,7 +18,7 @@ export default async function handler(req, res) {
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch (e) { body = {}; }
     }
-    await kv.set(KEY, body);
+    await redis.set(KEY, body);
     res.status(200).json({ ok: true });
     return;
   }
